@@ -40,3 +40,25 @@ When finished, leave the environment with:
 ```bash
 deactivate
 ```
+
+## Running a model with vLLM
+
+The repository has one script for each model. Before using one, open the file
+and change `MODEL_NAME` to the exact Hugging Face model ID for that model.
+The model IDs are left as placeholders because the exact variants used by the
+project are not listed in this repository.
+
+The three scripts use separate default ports:
+
+| Model | Script | Default port |
+| --- | --- | ---: |
+| GLM | `scripts/deploy_glm.sh` | 31000 |
+| Nemotron | `scripts/deploy_nemotron.sh` | 31001 |
+| Qwen | `scripts/deploy_qwen.sh` | 31002 |
+
+For example, edit `scripts/deploy_glm.sh`, set its model name and GPU count, then run:
+
+```bash
+bash scripts/deploy_glm.sh
+```
+
