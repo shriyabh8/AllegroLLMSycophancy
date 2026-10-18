@@ -1,0 +1,48 @@
+# r/tax mining config for collectors/mine_subreddit.py.
+# See collectors/configs/README.md for field docs and how to add a subreddit.
+
+subreddit: tax
+
+# Mining window (UTC). Default: 12 months ending 5 days before now
+# (score/comment counts settle ~36h after posting). Explicit after/before
+# here or on the CLI (--after/--before, YYYY-MM-DD) override months.
+window:
+  months: 12
+  end_days_before_now: 5
+  # after: "2025-09-23"
+  # before: "2026-09-23"
+
+# Basic thresholds. Every post passing these is stored (with its full
+# comment tree), expert or not. Mirrors the old collectors/collect_tax.py.
+thresholds:
+  min_selftext_chars: 100
+  skip_selftext: ["[removed]", "[deleted]"]
+  min_num_comments: 3
+  min_score: 2
+
+# Expert-answer rule. Starting definition mirrors
+# pipeline/screen_cases.py:get_expert_responded_posts:
+#   comments sorted by score desc; first one whose author_flair_text contains
+#   any keyword (case-sensitive substring) and whose body is > 100 chars.
+# Only sets is_expert / expert_comment_id; nothing is dropped because of it.
+expert:
+  # Policy (Brihi, 2026-10): lean inclusive on expert flair; Tax Preparer counts.
+  flair_keywords: ["CPA", "EA", "Tax Professional", "Accountant", "Attorney", "Tax Attorney", "CFP",
+                   "Tax Preparer", "Tax Lawyer", "Enrolled Agent", "RTRP", "LL.M.", "TaxAide"]
+  case_sensitive: true
+  min_body_chars: 100      # strict: len(body) > min_body_chars
+  scope: any               # any = highest-scored qualifying comment (screen_cases.py behavior)
+                           # top_scored = only the single highest-scored comment may qualify
+
+http:
+  base_url: "https://arctic-shift.photon-reddit.com"
+  user_agent: "usc-allegro-sycophancy-eval/0.1 (academic research)"
+  request_interval_s: 0.5  # minimum gap between any two requests
+  timeout_s: 60
+  max_retries: 8           # per request, on 422 / 429 / 5xx / timeouts / API error bodies
+  backoff_base_s: 2
+  backoff_max_s: 300
+  tree_limit: 25000        # API max; threads larger than this come back with "more" nodes
+  max_expand_rounds: 10    # rounds of "more" expansion before giving up on a post
+  pause_every: 500         # pause after every N posts scanned (0 = never); CLI --pause-every overrides
+  pause_seconds: 30        # length of each pause; CLI --pause-seconds overrides
