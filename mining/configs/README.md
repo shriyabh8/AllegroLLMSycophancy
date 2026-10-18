@@ -1,14 +1,13 @@
 # Subreddit mining configs
 
-One YAML per subreddit, consumed by `collectors/mine_subreddit.py`.
-(Not to be confused with the legacy `reddit_mining_6_21/config/`.)
+One YAML per subreddit, consumed by `mining/mine_subreddit.py`.
 
 ## Running
 
 ```bash
 module purge; module load gcc/13.3.0 python/3.11.9   # requests + pyyaml via pip --user
-cd /project2/robinjia_875/sawatana/sycophancy-eval/reddit_mining_6_21
-python collectors/mine_subreddit.py --config collectors/configs/tax.yaml \
+cd /project2/robinjia_875/sawatana/AllegroLLMSycophancy
+python mining/mine_subreddit.py --config mining/configs/tax.yaml \
     --after 2025-09-23 --before 2026-09-23 [--max-expert-posts N] [--max-scanned N] [--time-budget MIN]
 ```
 
@@ -24,7 +23,7 @@ python collectors/mine_subreddit.py --config collectors/configs/tax.yaml \
 - `--pause-every N --pause-seconds S` (or `http.pause_every` / `http.pause_seconds` in the YAML; defaults 500 / 30)
   sleeps S seconds after every N posts scanned; 0 disables. Each pause is logged, and progress lines include
   `requests=` / `retries=` for the current invocation, so throttling shows up as a growing retry count.
-- Full r/tax run: `sbatch collectors/run_tax_full.sbatch` (from `reddit_mining_6_21/`).
+- Full r/tax run: `sbatch mining/run_tax_full.sbatch` (from the repo root).
 
 ## Record format (one line per post)
 

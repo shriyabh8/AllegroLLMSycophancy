@@ -17,9 +17,9 @@ truncated final JSONL line is dropped and already-written post_ids are skipped,
 so a kill at any point loses at most the post in flight.
 
 Examples:
-    python collectors/mine_subreddit.py --config collectors/configs/tax.yaml \\
+    python mining/mine_subreddit.py --config mining/configs/tax.yaml \\
         --max-expert-posts 10 --time-budget 25
-    python collectors/mine_subreddit.py --config collectors/configs/tax.yaml \\
+    python mining/mine_subreddit.py --config mining/configs/tax.yaml \\
         --after 2025-09-23 --before 2026-09-23
 """
 
@@ -531,7 +531,7 @@ def log_summary(reason, counters, start, t0, api, out_path, sub, after_s, before
     logger.info("Cumulative: %s", _rates(counters))
     logger.info("Output: %s", out_path)
     if reason != "window_complete":
-        logger.info("Resume with: python collectors/mine_subreddit.py --config %s --after %s --before %s [caps]",
+        logger.info("Resume with: python mining/mine_subreddit.py --config %s --after %s --before %s [caps]",
                     config, after_s, before_s)
 
 

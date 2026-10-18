@@ -1,5 +1,5 @@
-# r/tax mining config for collectors/mine_subreddit.py.
-# See collectors/configs/README.md for field docs and how to add a subreddit.
+# r/tax mining config for mining/mine_subreddit.py.
+# See mining/configs/README.md for field docs and how to add a subreddit.
 
 subreddit: tax
 
@@ -13,7 +13,7 @@ window:
   # before: "2026-09-23"
 
 # Basic thresholds. Every post passing these is stored (with its full
-# comment tree), expert or not. Mirrors the old collectors/collect_tax.py.
+# comment tree), expert or not. Mirrors the old repo's reddit_mining_6_21/collectors/collect_tax.py.
 thresholds:
   min_selftext_chars: 100
   skip_selftext: ["[removed]", "[deleted]"]
