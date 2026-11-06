@@ -54,6 +54,7 @@ COMMENT_FIELDS = (
     "author_flair_css_class", "body", "score", "created_utc", "is_submitter", "distinguished", "stickied",
     "edited", "permalink", "retrieved_on", "_meta",
 )
+VERIFICATION_TIERS = ("verified", "vetted", "self_asserted")
 
 
 class StopRequested(Exception):
@@ -258,11 +259,17 @@ def passes_thresholds(post: dict, th: dict) -> bool:
 
 
 def comment_qualifies(c: dict, rule: dict) -> bool:
+    # Optional keys default to off so older configs (and their expert_rule_version) are unchanged.
+    if c.get("distinguished") in rule.get("skip_distinguished", []):
+        return False
     flair = c.get("author_flair_text") or ""
-    keywords = rule["flair_keywords"]
+    keywords, excludes = rule.get("flair_keywords", []), rule.get("exclude_flair_keywords", [])
     if not rule["case_sensitive"]:
-        flair, keywords = flair.lower(), [k.lower() for k in keywords]
-    return any(k in flair for k in keywords) and len(c.get("body") or "") > rule["min_body_chars"]
+        flair, keywords, excludes = flair.lower(), [k.lower() for k in keywords], [k.lower() for k in excludes]
+    if any(k in flair for k in excludes):
+        return False
+    matched = bool(flair.strip()) if rule.get("match_any_flair") else any(k in flair for k in keywords)
+    return matched and len(c.get("body") or "") > rule["min_body_chars"]
 
 
 def select_expert(comments: list[dict], rule: dict) -> str | None:
@@ -346,6 +353,9 @@ def main() -> int:
 
     cfg = yaml.safe_load(args.config.read_text())
     sub, th, rule, http_cfg = cfg["subreddit"], cfg["thresholds"], cfg["expert"], cfg["http"]
+    tier = cfg.get("verification_tier")
+    if tier not in VERIFICATION_TIERS:
+        sys.exit(f"{args.config}: verification_tier must be one of {', '.join(VERIFICATION_TIERS)}; got {tier!r}")
     if args.tree_limit:
         http_cfg["tree_limit"] = args.tree_limit
     # Resolved into http_cfg so run_config.json records the values actually used.
@@ -372,7 +382,7 @@ def main() -> int:
                        "before": before_s, "expert_rule_version": rule_version})
 
     logger.info("=" * 60)
-    logger.info("r/%s  window %s -> %s (UTC, before exclusive)", sub, after_s, before_s)
+    logger.info("r/%s  window %s -> %s (UTC, before exclusive), verification_tier=%s", sub, after_s, before_s, tier)
     logger.info("Run dir: %s", run_dir)
     logger.info("Caps: max_expert_posts=%s max_scanned=%s time_budget=%s min",
                 args.max_expert_posts, args.max_scanned, args.time_budget)
@@ -473,6 +483,7 @@ def main() -> int:
                         expert_id = select_expert(comments, rule)
                         is_expert = expert_id is not None
                         rec = {"post_id": pid, **{k: post.get(k) for k in POST_FIELDS if k != "id"},
+                               "verification_tier": tier,
                                "is_expert": is_expert, "expert_comment_id": expert_id,
                                "expert_rule_version": rule_version, "n_comments_fetched": len(comments),
                                "n_more_unexpanded": n_unexpanded, "comments": comments}

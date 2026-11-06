@@ -1,0 +1,60 @@
+# r/AskHistorians mining config for mining/mine_subreddit.py.
+# Copied from tax.yaml. See mining/configs/README.md for field docs.
+# Expert rule set from the 2026-11-05 --max-scanned 1000 pilot (see NOTES_mining.md).
+
+subreddit: AskHistorians
+
+# How much the sub's expert flair can be trusted (README: "verification_tier").
+# Mods give out flair after reviewing a user's answers; it is not a credential check.
+verification_tier: vetted
+
+# Mining window (UTC). Default: 12 months ending 5 days before now
+# (score/comment counts settle ~36h after posting). Explicit after/before
+# here or on the CLI (--after/--before, YYYY-MM-DD) override months.
+window:
+  months: 12
+  end_days_before_now: 5
+  # Full runs use the standard window (PLAN.md), passed on the CLI by run_askhistorians_full.sbatch.
+  # after: "2025-09-23"
+  # before: "2026-09-23"
+
+# Basic thresholds. Every post passing these is stored (with its full
+# comment tree), expert or not.
+# Questions are often title-only, so no selftext minimum (removed/deleted
+# posts are still skipped). AutoModerator stickies a comment on every thread,
+# so min_num_comments 2 means at least one non-bot comment (many are later removed by mods).
+thresholds:
+  min_selftext_chars: 0
+  skip_selftext: ["[removed]", "[deleted]"]
+  min_num_comments: 2
+  min_score: 2
+
+# Expert-answer rule: comments sorted by score desc; first one that is not mod-distinguished,
+# has a non-excluded flair, and whose body is > min_body_chars.
+# Only sets is_expert / expert_comment_id; nothing is dropped because of it.
+expert:
+  # Flairs are mostly free-text topics (71 distinct in a 1000-post pilot), so any flair counts
+  # except non-expert ones (Shoji, 2026-11-05). Inactive Flair and Mod Emeritus count.
+  #   Interesting Inquirer: given for good questions; FAQ Finder: links old answers; Automated Contributor: bot.
+  # "Verified" (AMA guest flair) counts.
+  match_any_flair: true
+  exclude_flair_keywords: ["Interesting Inquirer", "FAQ Finder", "Automated Contributor"]
+  # All 142 mod-distinguished flaired comments in the pilot were removal/rule notices, none answers.
+  skip_distinguished: ["moderator"]
+  case_sensitive: true
+  min_body_chars: 100      # once mod notices are skipped, <100 chars are non-answers; 100-1000 holds real answers
+  scope: any               # any = highest-scored qualifying comment (screen_cases.py behavior)
+                           # top_scored = only the single highest-scored comment may qualify
+
+http:
+  base_url: "https://arctic-shift.photon-reddit.com"
+  user_agent: "usc-allegro-sycophancy-eval/0.1 (academic research)"
+  request_interval_s: 0.5  # minimum gap between any two requests
+  timeout_s: 60
+  max_retries: 8           # per request, on 422 / 429 / 5xx / timeouts / API error bodies
+  backoff_base_s: 2
+  backoff_max_s: 300
+  tree_limit: 25000        # API max; threads larger than this come back with "more" nodes
+  max_expand_rounds: 10    # rounds of "more" expansion before giving up on a post
+  pause_every: 500         # pause after every N posts scanned (0 = never); CLI --pause-every overrides
+  pause_seconds: 30        # length of each pause; CLI --pause-seconds overrides

@@ -3,6 +3,10 @@
 
 subreddit: tax
 
+# How much the sub's expert flair can be trusted (README: "verification_tier").
+# r/tax flair is user-set, nobody checks credentials.
+verification_tier: self_asserted
+
 # Mining window (UTC). Default: 12 months ending 5 days before now
 # (score/comment counts settle ~36h after posting). Explicit after/before
 # here or on the CLI (--after/--before, YYYY-MM-DD) override months.
