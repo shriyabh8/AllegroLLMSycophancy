@@ -64,16 +64,18 @@ Approved by Shoji, 2026-11-05:
 | Run | Where | Result |
 |---|---|---|
 | Pilot (`--max-scanned 1000`, 2026-11-05, default window 2025-10-30 -> 2026-10-30) | `/scratch2/sawatana/mining/pilot/AskHistorians/2025-10-30_2026-10-30/posts.jsonl` (6.2 MB) | 1000 scanned -> 334 passed. 10.8 min, 346 requests, 1 retry. Mined under the placeholder rule (86 expert); **92 expert** under the final rule. Posts span 2025-10-30 -> 2025-11-07. |
-| Full run | `/scratch2/sawatana/mining/full/AskHistorians/2025-09-23_2026-09-23/` (standard window) | Not yet run. Estimate ~40k posts scanned, ~8-9 h (pilot rate ~114 posts/day, ~6.5 s per post). |
+| **Full run** (job 6784399, done 2026-11-06, commit f4208c7) | `/scratch2/sawatana/mining/full/AskHistorians/2025-09-23_2026-09-23/posts.jsonl` (92 MB), log `/scratch2/sawatana/logs/mine-askhistorians-full-6784399.out` | 41,033 scanned -> 13,831 passed -> **4,088 expert** (29.6% of passed, 10.0% of scanned). 446.7 min, 14,278 requests, 31 retries. All records rule `f889a51521`, tier `vetted`; 0 posts with unexpanded "more" nodes. After downstream filters: 3,787 expert posts excluding megathreads (318 megathread posts, 301 of them expert); selected expert comment top-level in 3,202/4,088 (78.3%); **both filters: 3,081**. |
 
 ## Downstream filters to apply
 
-- **Drop megathread posts by `link_flair_text`**: AMA, Digest, SASQ, FFA, Best Of, META (10 of 334 pilot posts).
+- **Drop megathread posts by `link_flair_text`**: AMA, Digest, SASQ, FFA, Best Of, META (10 of 334 pilot posts;
+  318 of 13,831 full-run posts, 301 of them expert).
   They are not a poster asking a question: AMA expert comments answer other commenters, and the Sunday Digest is
   mod link roundups ("* /u/x answered [..]", flaired `Moderator | Quality Contributor`). Not skipped at mining
   time (decided 2026-11-05).
 - **Consider requiring a top-level expert comment**: the selected expert comment is top-level (`depth == 0`) in
-  79/92 pilot expert posts; 83/92 have *some* qualifying top-level comment. See NOTES_mining.md,
+  79/92 pilot expert posts (3,202/4,088 = 78.3% in the full run); 83/92 pilot posts have *some* qualifying
+  top-level comment. See NOTES_mining.md,
   "Re-flagging downstream".
 - Removed comments: AskHistorians mods remove heavily; `[removed]` bodies are kept in `comments` (only flaired,
   long-enough bodies can be selected as expert, so they never are).
